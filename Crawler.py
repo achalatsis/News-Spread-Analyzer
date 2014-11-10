@@ -45,7 +45,7 @@ class Crawler:
         for word in self.keywords:
             searchTerms += word[0] + "+"
         searchTerms = searchTerms[:-1] #strip last +
-        searchURL = applicationConfig.baseSearchURL.format(urllib.parse.quote(searchTerms), '/')
+        searchURL = applicationConfig.baseSearchURL.format(applicationConfig.publicAddress, urllib.parse.quote(searchTerms), '/')
         print("Escaped search URL is: ", searchURL)
 
         #create HTTP client
@@ -57,18 +57,27 @@ class Crawler:
             for start in range(0, applicationConfig.resultsToExamine):
                 currentURL = searchURL + "&start=" + str(start*10)
                 page = opener.open(currentURL, None, applicationConfig.crawlerFetchTimeout)
-                soup = BeautifulSoup(page)
+                json = simplejson.load(page)
 
-                for a in soup.select('.r a'):
+                responseStatus = json["responseStatus"]
+                if responseStatus is not 200:
+                    raise CrawlerError("Error fetching results from Google: {0}".format(responseStatus))
+                    if applicationConfig.debugOutput is true:
+                        print(page)
+
+                results = json["responseData"]["results"]
+                for result in results:
+                    unescapedURL = result["unescapedUrl"]
+                    self.urls.append(unescapedURL)
+
                     try:
-                        url = urllib.parse.parse_qs(urllib.parse.urlparse(a['href']).query)['q'][0]
-                        self.urls.append(url)
-
-                        parsedURI = parse.urlparse(url)
+                        parsedURI = urllib.parse.urlparse(unescapedURL)
                         domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
                         self.domains.append(domain)
                     except:
-                        pass
+                        print("Error parsing URL:", unescapedURL, sys.exc_info()[0])
+
+            sleep(applicationConfig.queryDelay) #try to make Google bot detection happy
 
         except urllib.error.HTTPError as exc:
             print("There was an error fetching pages:", exc)

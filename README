@@ -1,2 +1,4 @@
 Χρειάζεται Python >= 3
 beautiful soup στο default path (i.e. εγκατεστημένη με PIP)
+χρειαζεται google libs: pip install google-api-python-client
+χρειαζεται simplejson

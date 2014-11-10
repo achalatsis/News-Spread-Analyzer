@@ -14,6 +14,9 @@ class ConfigBundle:
         self.baseSearchURL = ""
         self.userAgent = ""
 
+        self.publicAddress = ""
+        self.queryDelay = 0
+
 
 
 applicationConfig = ConfigBundle()
