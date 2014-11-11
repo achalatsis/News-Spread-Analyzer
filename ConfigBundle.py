@@ -17,6 +17,9 @@ class ConfigBundle:
         self.publicAddress = ""
         self.queryDelay = 0
 
+        self.readabilityToken = ""
+        self.readabilityBaseURL = ""
+
 
 
 applicationConfig = ConfigBundle()

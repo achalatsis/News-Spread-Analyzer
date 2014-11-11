@@ -72,6 +72,12 @@ class Crawler:
 
             results = json["responseData"]["results"]
             for result in results:
+                #before saving the result, we have to open the page to verify it's subject
+                #verification is done by comparing the first N (as configured) terms.
+
+
+                
+
                 unescapedURL = result["unescapedUrl"]
                 self.urls.append(unescapedURL)
 

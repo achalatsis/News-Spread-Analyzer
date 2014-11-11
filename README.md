@@ -3,4 +3,7 @@ Goal is to have an automated tool for extracting news spread patterns (and in th
 
 Prerequisites:
 * python 3
-* simplejson, google-api-python-client, beautifulsoup. You can install them via pip.
+* simplejson, google-api-python-client, beautifulsoup, readability-lxml. You can install them via pip.
+
+In a file named serviceTokens.py you should declare a variable:
+* readabilityToken, containing your Readability token

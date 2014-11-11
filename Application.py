@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-import os, sys, inspect
-from ConfigBundle import *
+import sys
 from Document import *
-from Crawler import *
-import os
-from urllib import request, parse
+import urllib.request
+import urllib.parse
+from bs4 import BeautifulSoup
+from ConfigBundle import *
+import simplejson
 import time
+from serviceTokens import *
 
 global applicationConfig
 
@@ -15,6 +17,8 @@ baseSearchURLfromGreece = "https://ajax.googleapis.com/ajax/services/search/web?
 baseSearchURLSimple = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&userip={0}&q={1}"
 baseSearchURLinGreek = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&tbs=lr:lang_1el&lr=lang_el&userip={0}&q={1}"
 baseSearchURLfromGreeceInGreek = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&cr=countryGR&tbas=0&tbs=ctr:countryGR,lr:lang_1el&lr=lang_el&userip={0}&q={1}"
+
+readabilityBaseURL = "https://www.readability.com/api/content/v1/parser?url={0}&token={1}"
 
 
 #main application code
@@ -30,6 +34,8 @@ def ApplicationEntryPoint():
     applicationConfig.relativeArticleDirectory = "sample data/articles"
     applicationConfig.publicAddress = PublicIPv4Address();
     applicationConfig.queryDelay = 5 #seconds
+    applicationConfig.readabilityToken = readabilityToken
+    applicationConfig.readabilityBaseURL = readabilityBaseURL
 
     punctuationMarksFilename = "sample data/punctuationmarks"
     ignoredWordsFilename = "sample data/ignoredWords"
