@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import os, sys
 from Document import *
 import urllib.request
 import urllib.parse
@@ -9,6 +9,8 @@ from ConfigBundle import *
 import simplejson
 import time
 from serviceTokens import *
+import requests
+from Crawler import *
 
 global applicationConfig
 
@@ -53,13 +55,14 @@ def ApplicationEntryPoint():
         try:
             crawler = Crawler.FromFile(filename, parsingSettings)
             crawler.SearchGoogle()
-            for domain in crawler.domains:
-                if domain in trackedDomains:
-                    trackedDomains[domain] += 1
-                else:
-                    trackedDomains[domain] = 1
         except CrawlerError as exc:
-            print("Error while searching:", exc.strerror, end="\n\n")
+                print("Error while searching:", exc.strerror, end="\n\n")
+        for domain in crawler.domains:
+            if domain in trackedDomains:
+                trackedDomains[domain] += 1
+            else:
+                trackedDomains[domain] = 1
+
 
 
     #print collected data
@@ -71,12 +74,12 @@ def ApplicationEntryPoint():
 def PublicIPv4Address():
     addressServiceURL = "http://api.ipify.org?format=json"
     try:
-        page = request.urlopen(addressServiceURL)
-        json = simplejson.load(page)
+        result = requests.get(addressServiceURL)
+        json = result.json()
         address = json["ip"]
         return address
     except:
-        print("Could not determine, public IP address, exiting...", sys.exc_info()[0])
+        print("Could not determine, public IP address, exiting...", result.status_code)
         sys.exit()
 
 

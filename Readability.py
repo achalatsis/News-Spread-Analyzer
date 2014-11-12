@@ -32,7 +32,7 @@ def strip_tags(html):
 class Readability:
 
     @staticmethod
-    def getPageContent(token, url):
+    def GetPageContent(token, url):
 
         #fetch
         constructedURL = applicationConfig.readabilityBaseURL.format(url, token)

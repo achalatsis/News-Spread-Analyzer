@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from ConfigBundle import *
 import simplejson
 import time
+from Readability import *
 
 global applicationConfig
 
@@ -58,11 +59,10 @@ class Crawler:
         for start in range(0, applicationConfig.resultsToExamine):
             currentURL = searchURL + "&start=" + str(start*10)
             try: #fetching
-                page = opener.open(currentURL, None, applicationConfig.crawlerFetchTimeout)
-            except urllib.error.HTTPError as exc:
-                print("There was an error fetching Google results:", exc)
+                json = requests.get(currentURL).json()
+            except:
+                print("There was an error fetching Google results:")
                 continue
-            json = simplejson.load(page)
 
             responseStatus = json["responseStatus"]
             if responseStatus is not 200:
@@ -72,26 +72,49 @@ class Crawler:
 
             results = json["responseData"]["results"]
             for result in results:
-                #before saving the result, we have to open the page to verify it's subject
-                #verification is done by comparing the first N (as configured) terms.
-
-
-                
 
                 unescapedURL = result["unescapedUrl"]
                 self.urls.append(unescapedURL)
 
-                try: #parsing domain
-                    parsedURI = urllib.parse.urlparse(unescapedURL)
-                    domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
-                    self.domains.append(domain)
-                except:
-                    print("Error parsing URL:", unescapedURL, sys.exc_info()[0])
-
             time.sleep(applicationConfig.queryDelay) #try to make Google bot detection happy
             print("Fetching more results")
 
+        self.ValidateResults()
 
+
+    def SearchYahoo(self):
+        pass
+
+
+    def ValidateResults(self):
+
+        for url in self.urls:
+            #before saving the result, we have to open the page to verify it's subject
+            #verification is done by comparing the first N (as configured) terms.
+
+            #get keywords of web article
+            pureArticle = Readability.GetPageContent(applicationConfig.readabilityToken, result)
+            doc = Document(pureArticle)
+            topKeywords = doc.CalculateTF(True, applicationConfig.termsToSearch)
+
+            #compare self.keywords with topKeywords
+            differentTerms = 0
+            for i in range(0, topKeywords.count()):
+                if topKeywords[i] != self.keywords[i]:
+                    differentTerms += 1
+
+            if differentTerms > topKeywords.count()/3:
+                continue #this article is not about the same thing, examine next
+
+            #it matches, so save it
+            try: #parsing domain
+                parsedURI = urllib.parse.urlparse(unescapedURL)
+                domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
+                self.domains.append(domain)
+            except:
+                print("Error parsing URL:", unescapedURL, sys.exc_info()[0])
+
+        return self.domains
 
 
 
