@@ -6,6 +6,7 @@ import urllib2
 import simplejson
 import time
 import urlparse
+import oauth2 as oauth
 
 from Readability import *
 from Document import *
@@ -27,6 +28,21 @@ class Crawler:
         self.keywords = keywords
         self.domains = []
         self.urls = []
+        self.parsingSettings = None
+
+    @staticmethod
+    def oauth_request(url, params, method, oauth_key, oauth_secret):
+        params['oauth_version'] = "1.0"
+        params['oauth_nonce'] = oauth.generate_nonce()
+        params['oauth_timestamp'] = int(time.time())
+
+        consumer = oauth.Consumer(key=oauth_key,
+                                  secret=oauth_secret)
+        params['oauth_consumer_key'] = consumer.key
+        req = oauth.Request(method=method, url=url, parameters=params)
+        req.sign_request(oauth.SignatureMethod_HMAC_SHA1(), consumer, None)
+
+        return req
 
 
     @staticmethod
@@ -41,9 +57,11 @@ class Crawler:
         print("")
 
         spider = Crawler(topKeywords)
+        spider.parsingSettings = parsingSettings
         return spider
 
 
+    #deprecated since Google API is deprecated and scrapping get's detected after a few times
     def SearchGoogle(self):
         #now we have to construct a search query from the returned terms
         searchTerms = ""
@@ -82,7 +100,34 @@ class Crawler:
 
 
     def SearchYahoo(self):
-        pass
+        #now we have to construct a search query from the returned terms
+        searchTerms = ""
+        for word in self.keywords:
+            searchTerms += word[0] + " "
+        searchTerms = searchTerms[:-1] #strip last  " "
+
+        #encode/escape request parameters
+        req = Crawler.oauth_request(applicationConfig.ybossURL, {"q": searchTerms}, "GET", applicationConfig.ybossOAuthKey, applicationConfig.ybossOAuthSecret)
+        req['q'] = req['q'].encode('utf8')
+        searchURL = req.to_url().replace('+', '%20')
+
+        #try fetching results & parsing json
+        print("Escaped search URL is: ", searchURL)
+        try:
+            page = urllib2.urlopen(searchURL)
+            json = simplejson.load(page)
+            results = json["bossresponse"]["web"]["results"]
+        except (urllib2.HTTPError, urllib2.URLError):
+                print("There was an error fetching Yahoo results")
+
+        #try parsing json
+        for result in results:
+            url = result["clickurl"]
+            self.urls.append(url)
+            if applicationConfig.debugOutput is True:
+                print(url)
+
+        self.ValidateResults()
 
 
     def ValidateResults(self):
@@ -92,17 +137,21 @@ class Crawler:
             #verification is done by comparing the first N (as configured) terms.
 
             #get keywords of web article
-            pureArticle = Readability.GetPageContent(applicationConfig.readabilityToken, result)
+            try:
+                pureArticle = Readability.GetPageContent(applicationConfig.readabilityToken, url)
+            except ReadabilityAccessError as e:
+                continue
             doc = Document(pureArticle)
-            topKeywords = doc.CalculateTF(True, applicationConfig.termsToSearch)
+            topKeywords = doc.CalculateTF(self.parsingSettings, True, applicationConfig.termsToSearch)
 
             #compare self.keywords with topKeywords
             differentTerms = 0
-            for i in range(0, topKeywords.count()):
-                if topKeywords[i] != self.keywords[i]:
+            for i in range(0, len(topKeywords)):
+                print("a:", topKeywords[i][0], "b:", self.keywords[i][0])
+                if topKeywords[i][0] != self.keywords[i][0]:
                     differentTerms += 1
 
-            if differentTerms > topKeywords.count()/3:
+            if differentTerms > len(topKeywords)/3:
                 continue #this article is not about the same thing, examine next
 
             #it matches, so save it
@@ -112,6 +161,10 @@ class Crawler:
                 self.domains.append(domain)
             except:
                 print("Error parsing URL:", unescapedURL, sys.exc_info()[0])
+
+        if applicationConfig.debugOutput is True:
+            print("Following domains matched:")
+            print(self.domains)
 
         return self.domains
 

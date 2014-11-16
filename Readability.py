@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import urllib2
+import simplejson
 from HTMLParser import HTMLParser
 
 from ConfigBundle import *
@@ -38,10 +39,12 @@ class Readability:
         #fetch
         constructedURL = applicationConfig.readabilityBaseURL.format(url, token)
         try:
+            if applicationConfig.debugOutput is True:
+                print("Getting pure content of:", url)
             page = urllib2.urlopen(constructedURL)
             json = simplejson.load(page)
-        except:
-            print("There was an error accessing Readability API:", exc)
+        except (urllib2.HTTPError, urllib2.URLError):
+            print("There was an error accessing Readability API:")
             raise ReadabilityAccessError()
 
         content = json["content"]

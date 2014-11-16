@@ -38,6 +38,9 @@ def ApplicationEntryPoint():
     applicationConfig.queryDelay = 5 #seconds
     applicationConfig.readabilityToken = readabilityToken
     applicationConfig.readabilityBaseURL = readabilityBaseURL
+    applicationConfig.ybossURL = "http://yboss.yahooapis.com/ysearch/web"
+    applicationConfig.ybossOAuthKey = yboss_oauth_key
+    applicationConfig.ybossOAuthSecret = yboss_oauth_secret
 
     punctuationMarksFilename = "sample data/punctuationmarks"
     ignoredWordsFilename = "sample data/ignoredWords"
@@ -54,7 +57,7 @@ def ApplicationEntryPoint():
     for filename in articleFilenames:
         try:
             crawler = Crawler.FromFile(filename, parsingSettings)
-            crawler.SearchGoogle()
+            crawler.SearchYahoo()
         except CrawlerError as exc:
                 print("Error while searching:", exc.strerror, end="\n\n")
         for domain in crawler.domains:

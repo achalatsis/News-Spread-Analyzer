@@ -20,6 +20,10 @@ class ConfigBundle:
         self.readabilityToken = ""
         self.readabilityBaseURL = ""
 
+        self.ybossURL = ""
+        self.ybossOAuthKey = ""
+        self.ybossOAuthSecret = ""
+
 
 
 applicationConfig = ConfigBundle()
