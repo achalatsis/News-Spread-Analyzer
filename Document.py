@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import sys
 import math
 import re
 import string
 from operator import itemgetter
 from ConfigBundle import *
-import urllib.parse
+from urlparse import *
 import simplejson
+
 
 global applicationConfig
 

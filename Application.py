@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import os, sys
-from Document import *
-import urllib.request
-import urllib.parse
-from bs4 import BeautifulSoup
-from ConfigBundle import *
+import urllib2
 import simplejson
 import time
 from serviceTokens import *
-import requests
+
+from ConfigBundle import *
+from Document import *
 from Crawler import *
+
 
 global applicationConfig
 
@@ -64,7 +64,6 @@ def ApplicationEntryPoint():
                 trackedDomains[domain] = 1
 
 
-
     #print collected data
     for domain, occurences in domains:
         print (domain, domains[domain])
@@ -74,12 +73,12 @@ def ApplicationEntryPoint():
 def PublicIPv4Address():
     addressServiceURL = "http://api.ipify.org?format=json"
     try:
-        result = requests.get(addressServiceURL)
-        json = result.json()
+        page = urllib2.urlopen(addressServiceURL)
+        json = simplejson.load(page)
         address = json["ip"]
         return address
     except:
-        print("Could not determine, public IP address, exiting...", result.status_code)
+        print("Could not determine, public IP address, exiting...")
         sys.exit()
 
 

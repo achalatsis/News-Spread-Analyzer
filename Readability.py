@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+import urllib2
+from HTMLParser import HTMLParser
+
 from ConfigBundle import *
-import html.parser
-from html.parser import HTMLParser
-import requests
 
 
 class ReadabilityAccessError(Exception):
@@ -37,7 +38,8 @@ class Readability:
         #fetch
         constructedURL = applicationConfig.readabilityBaseURL.format(url, token)
         try:
-            json = requests.get(constructedURL).json()
+            page = urllib2.urlopen(constructedURL)
+            json = simplejson.load(page)
         except:
             print("There was an error accessing Readability API:", exc)
             raise ReadabilityAccessError()
@@ -45,7 +47,7 @@ class Readability:
         content = json["content"]
 
         #now we have to prettify it: unescape it & strip tags
-        h = html.parser.HTMLParser()
+        h = HTMLParser()
         unescapedContent = h.unescape(content)
         strippedContent = strip_tags(unescapedContent)
 

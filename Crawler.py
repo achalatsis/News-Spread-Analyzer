@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import sys
-from Document import *
-import urllib.request
-import urllib.parse
-from bs4 import BeautifulSoup
-from ConfigBundle import *
+import urllib2
 import simplejson
 import time
+import urlparse
+
 from Readability import *
+from Document import *
+from ConfigBundle import *
+
 
 global applicationConfig
 
@@ -48,18 +50,15 @@ class Crawler:
         for word in self.keywords:
             searchTerms += word[0] + "+"
         searchTerms = searchTerms[:-1] #strip last +
-        searchURL = applicationConfig.baseSearchURL.format(applicationConfig.publicAddress, urllib.parse.quote(searchTerms), '/')
+        searchURL = applicationConfig.baseSearchURL.format(applicationConfig.publicAddress, urllib2.quote(searchTerms), '/')
         print("Escaped search URL is: ", searchURL)
-
-        #create HTTP client
-        opener = urllib.request.build_opener()
-        opener.addheaders = [('User-agent', applicationConfig.userAgent)]
 
         #startch fetching
         for start in range(0, applicationConfig.resultsToExamine):
             currentURL = searchURL + "&start=" + str(start*10)
             try: #fetching
-                json = requests.get(currentURL).json()
+                page = urllib2.urlopen(currentURL)
+                json = simplejson.load(page)
             except:
                 print("There was an error fetching Google results:")
                 continue
@@ -108,7 +107,7 @@ class Crawler:
 
             #it matches, so save it
             try: #parsing domain
-                parsedURI = urllib.parse.urlparse(unescapedURL)
+                parsedURI = urllib2.urlparse(unescapedURL)
                 domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
                 self.domains.append(domain)
             except:
