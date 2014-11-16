@@ -12,7 +12,6 @@ from Readability import *
 from Document import *
 from ConfigBundle import *
 
-
 global applicationConfig
 
 
@@ -24,11 +23,12 @@ class CrawlerError(Exception):
 
 
 class Crawler:
-    def __init__(self, keywords):
+    def __init__(self, keywords, parsingSettings):
         self.keywords = keywords
         self.domains = []
         self.urls = []
-        self.parsingSettings = None
+        self.parsingSettings = parsingSettings
+
 
     @staticmethod
     def oauth_request(url, params, method, oauth_key, oauth_secret):
@@ -46,57 +46,22 @@ class Crawler:
 
 
     @staticmethod
-    def FromFile(filename, parsingSettings):
+    def FromLink(linkURL, parsingSettings):
+        try:
+            pureArticle = Readability.GetPageContent(applicationConfig.readabilityToken, linkURL)
+        except ReadabilityAccessError as e:
+            print("There was an error extracting the content of the article")
+            return
 
-        #load text
-        doc = Document.FromFile(filename)
+        doc = Document(pureArticle)
         topKeywords = doc.CalculateTF(parsingSettings, True, applicationConfig.termsToSearch)
-        print("Most common terms in ", filename, "are:")
-        for word in topKeywords:
-            print(word[0], ":", word[1], end=", ")
+        print("Most common terms in are:")
+        for keyword in topKeywords:
+            print(keyword[0], ":", keyword[1], end=", ")
         print("")
 
-        spider = Crawler(topKeywords)
-        spider.parsingSettings = parsingSettings
+        spider = Crawler(topKeywords, parsingSettings)
         return spider
-
-
-    #deprecated since Google API is deprecated and scrapping get's detected after a few times
-    def SearchGoogle(self):
-        #now we have to construct a search query from the returned terms
-        searchTerms = ""
-        for word in self.keywords:
-            searchTerms += word[0] + "+"
-        searchTerms = searchTerms[:-1] #strip last +
-        searchURL = applicationConfig.baseSearchURL.format(applicationConfig.publicAddress, urllib2.quote(searchTerms), '/')
-        print("Escaped search URL is: ", searchURL)
-
-        #startch fetching
-        for start in range(0, applicationConfig.resultsToExamine):
-            currentURL = searchURL + "&start=" + str(start*10)
-            try: #fetching
-                page = urllib2.urlopen(currentURL)
-                json = simplejson.load(page)
-            except:
-                print("There was an error fetching Google results:")
-                continue
-
-            responseStatus = json["responseStatus"]
-            if responseStatus is not 200:
-                raise CrawlerError("Error fetching results from Google: {0}".format(responseStatus))
-                if applicationConfig.debugOutput is true:
-                    print(page)
-
-            results = json["responseData"]["results"]
-            for result in results:
-
-                unescapedURL = result["unescapedUrl"]
-                self.urls.append(unescapedURL)
-
-            time.sleep(applicationConfig.queryDelay) #try to make Google bot detection happy
-            print("Fetching more results")
-
-        self.ValidateResults()
 
 
     def SearchYahoo(self):
@@ -139,32 +104,39 @@ class Crawler:
             #get keywords of web article
             try:
                 pureArticle = Readability.GetPageContent(applicationConfig.readabilityToken, url)
-            except ReadabilityAccessError as e:
+            except (ReadabilityAccessError, ReadabilityURLError):
                 continue
+                
             doc = Document(pureArticle)
             topKeywords = doc.CalculateTF(self.parsingSettings, True, applicationConfig.termsToSearch)
 
             #compare self.keywords with topKeywords
-            differentTerms = 0
-            for i in range(0, len(topKeywords)):
-                print("a:", topKeywords[i][0], "b:", self.keywords[i][0])
-                if topKeywords[i][0] != self.keywords[i][0]:
-                    differentTerms += 1
+            list1 = []
+            list2 = []
+            for keyword in topKeywords:
+                list1.append(keyword[0])
+            for keyword in self.keywords:
+                list2.append(keyword[0])
+            matchingKeywords = set(list1).intersection(list2)
 
-            if differentTerms > len(topKeywords)/3:
-                continue #this article is not about the same thing, examine next
+            if applicationConfig.debugOutput is True:
+                print("Matching keywords: ")
+                for keyword in matchingKeywords:
+                    print(keyword, end=", ")
+                print("")
+
+            if len(matchingKeywords) < 2/3*len(self.keywords):
+                print("Skipping post because not enough keywords match")
+                continue
 
             #it matches, so save it
             try: #parsing domain
-                parsedURI = urllib2.urlparse(unescapedURL)
+                parsedURI = urlparse(url)
                 domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
                 self.domains.append(domain)
+                print("extracted url is:", domain)
             except:
-                print("Error parsing URL:", unescapedURL, sys.exc_info()[0])
-
-        if applicationConfig.debugOutput is True:
-            print("Following domains matched:")
-            print(self.domains)
+                print("Error parsing URL")
 
         return self.domains
 

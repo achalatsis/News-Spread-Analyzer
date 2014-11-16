@@ -8,7 +8,13 @@ from HTMLParser import HTMLParser
 from ConfigBundle import *
 
 
+
 class ReadabilityAccessError(Exception):
+    pass
+
+
+
+class ReadabilityURLError(Exception):
     pass
 
 
@@ -37,14 +43,19 @@ class Readability:
     def GetPageContent(token, url):
 
         #fetch
-        constructedURL = applicationConfig.readabilityBaseURL.format(url, token)
+        try:
+            constructedURL = applicationConfig.readabilityBaseURL.format(url, token)
+        except UnicodeEncodeError:
+            print("There was an error constructing URL for accesing Readability")
+            raise ReadabilityAccessError()
+
         try:
             if applicationConfig.debugOutput is True:
                 print("Getting pure content of:", url)
             page = urllib2.urlopen(constructedURL)
             json = simplejson.load(page)
         except (urllib2.HTTPError, urllib2.URLError):
-            print("There was an error accessing Readability API:")
+            print("There was an error accessing Readability API")
             raise ReadabilityAccessError()
 
         content = json["content"]

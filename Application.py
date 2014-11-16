@@ -47,28 +47,25 @@ def ApplicationEntryPoint():
     parsingSettings = DocumentParsingSettings(punctuationMarksFilename, ignoredWordsFilename, 4)
 
     #load available articles
-    articleFilenames = []
-    for filename in os.listdir(applicationConfig.relativeArticleDirectory):
-        if filename.endswith(".article"):
-            articleFilenames.append(applicationConfig.relativeArticleDirectory + "/" + filename)
-    print("Loaded the following articles:", articleFilenames)
+    articleLinks = []
+    articleLinks.append('http://www.newsnowgr.com/article/744497/anakoinosi---sok-tis-nasa--i-gi-tha-einai-6-meres-sto-skotadi-ton-dekemvrio.html')
 
     domains = {}
-    for filename in articleFilenames:
+    for link in articleLinks:
         try:
-            crawler = Crawler.FromFile(filename, parsingSettings)
+            crawler = Crawler.FromLink(link, parsingSettings)
             crawler.SearchYahoo()
         except CrawlerError as exc:
                 print("Error while searching:", exc.strerror, end="\n\n")
         for domain in crawler.domains:
-            if domain in trackedDomains:
-                trackedDomains[domain] += 1
+            if domain in domains:
+                domains[domain] += 1
             else:
-                trackedDomains[domain] = 1
+                domains[domain] = 1
 
 
     #print collected data
-    for domain, occurences in domains:
+    for domain, occurences in domains.iteritems():
         print (domain, domains[domain])
 
 
