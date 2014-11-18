@@ -6,12 +6,7 @@ class ConfigBundle:
     def __init__(self):
         self.debugOutput = False
 
-        self.punctuationMarksFilename = ""
-        self.ignoredWordsFilename = ""
-
         self.termsToSearch = 0
-        self.resultsToExamine = 0
-        self.baseSearchURL = ""
         self.userAgent = ""
 
         self.publicAddress = ""

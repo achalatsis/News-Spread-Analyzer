@@ -49,7 +49,7 @@ class Crawler:
     def FromLink(linkURL, parsingSettings):
         try:
             pureArticle = Readability.GetPageContent(applicationConfig.readabilityToken, linkURL)
-        except ReadabilityAccessError as e:
+        except ReadabilityAccessError:
             print("There was an error extracting the content of the article")
             return
 
@@ -61,6 +61,7 @@ class Crawler:
         print("")
 
         spider = Crawler(topKeywords, parsingSettings)
+        spider.urls.append(linkURL)
         return spider
 
 
@@ -106,7 +107,7 @@ class Crawler:
                 pureArticle = Readability.GetPageContent(applicationConfig.readabilityToken, url)
             except (ReadabilityAccessError, ReadabilityURLError):
                 continue
-                
+
             doc = Document(pureArticle)
             topKeywords = doc.CalculateTF(self.parsingSettings, True, applicationConfig.termsToSearch)
 
@@ -134,7 +135,8 @@ class Crawler:
                 parsedURI = urlparse(url)
                 domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
                 self.domains.append(domain)
-                print("extracted url is:", domain)
+                if applicationConfig.debugOutput is True:
+                    print("Extracted url is:", domain)
             except:
                 print("Error parsing URL")
 

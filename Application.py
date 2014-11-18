@@ -15,58 +15,69 @@ from Crawler import *
 global applicationConfig
 
 #search URLs
-baseSearchURLfromGreece = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&tbs=ctr:countryGR&cr=countryGR&userip={0}&q={1}"
-baseSearchURLSimple = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&userip={0}&q={1}"
-baseSearchURLinGreek = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&tbs=lr:lang_1el&lr=lang_el&userip={0}&q={1}"
-baseSearchURLfromGreeceInGreek = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&cr=countryGR&tbas=0&tbs=ctr:countryGR,lr:lang_1el&lr=lang_el&userip={0}&q={1}"
-
 readabilityBaseURL = "https://www.readability.com/api/content/v1/parser?url={0}&token={1}"
+yahooBaseURL = "http://yboss.yahooapis.com/ysearch/web"
 
 
 #main application code
 def ApplicationEntryPoint():
 
     #configuration
-    applicationConfig.debugOutput = True
+    applicationConfig.debugOutput = False
     applicationConfig.termsToSearch = 10
-    applicationConfig.resultsToExamine = 20 #must be a multiple of 10
-    applicationConfig.baseSearchURL = baseSearchURLfromGreeceInGreek
     applicationConfig.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.104 Safari/537.36"
     applicationConfig.crawlerFetchTimeout = 2 #seconds
-    applicationConfig.relativeArticleDirectory = "sample data/articles"
     applicationConfig.publicAddress = PublicIPv4Address();
     applicationConfig.queryDelay = 5 #seconds
     applicationConfig.readabilityToken = readabilityToken
     applicationConfig.readabilityBaseURL = readabilityBaseURL
-    applicationConfig.ybossURL = "http://yboss.yahooapis.com/ysearch/web"
+    applicationConfig.ybossURL = yahooBaseURL
     applicationConfig.ybossOAuthKey = yboss_oauth_key
     applicationConfig.ybossOAuthSecret = yboss_oauth_secret
 
+    #settings for parsing article contents
     punctuationMarksFilename = "sample data/punctuationmarks"
     ignoredWordsFilename = "sample data/ignoredWords"
     parsingSettings = DocumentParsingSettings(punctuationMarksFilename, ignoredWordsFilename, 4)
 
     #load available articles
     articleLinks = []
-    articleLinks.append('http://www.newsnowgr.com/article/744497/anakoinosi---sok-tis-nasa--i-gi-tha-einai-6-meres-sto-skotadi-ton-dekemvrio.html')
+    articleLinksFilename = "sample data/articleLinks"
+    try:
+        file = open(articleLinksFilename, "rU")
+        for line in file:
+            articleLinks.append(line)
+    except IOError as exc:
+        print("Error reading from file: ", exc.strerror)
+        sys.exit()
 
+    #for each link start a new crawl
     domains = {}
     for link in articleLinks:
         try:
             crawler = Crawler.FromLink(link, parsingSettings)
-            crawler.SearchYahoo()
         except CrawlerError as exc:
-                print("Error while searching:", exc.strerror, end="\n\n")
+                print("Error getting initial content from article:", link)
+
+        if crawler is not None:
+            crawler.SearchYahoo()
+        else:
+            print("Error building crawler for article:", link)
+            continue
+
         for domain in crawler.domains:
             if domain in domains:
                 domains[domain] += 1
             else:
                 domains[domain] = 1
 
+    #sort domains in reverse (most occurences) order
+    sortedDomains = sorted(domains, key=lambda tup: tup[1], reverse=True)
+    topDomains = sortedDomains[:10]
 
     #print collected data
-    for domain, occurences in domains.iteritems():
-        print (domain, domains[domain])
+    for domain in topDomains:
+        print (domain[0], domain[1])
 
 
 
