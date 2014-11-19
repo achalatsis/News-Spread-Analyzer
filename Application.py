@@ -10,6 +10,7 @@ from serviceTokens import *
 from ConfigBundle import *
 from Document import *
 from Crawler import *
+from Visualization import *
 
 
 global applicationConfig
@@ -34,6 +35,8 @@ def ApplicationEntryPoint():
     applicationConfig.ybossURL = yahooBaseURL
     applicationConfig.ybossOAuthKey = yboss_oauth_key
     applicationConfig.ybossOAuthSecret = yboss_oauth_secret
+    applicationConfig.chartTitle = "News spread chart"
+    applicationConfig.chartSubtitle = "News stories count"
 
     #settings for parsing article contents
     punctuationMarksFilename = "sample data/punctuationmarks"
@@ -76,8 +79,16 @@ def ApplicationEntryPoint():
     topDomains = sortedDomains[:10]
 
     #print collected data
-    for domain in topDomains:
-        print (domain[0], domain[1])
+    if applicationConfig.debugOutput is True:
+        for domain in topDomains:
+            print (domain[0], domain[1])
+
+    #create a bar chart to display the domains
+    values = [i[1] for i in topDomains]
+    labels = [i[0] for i in topDomains]
+
+    domainChart = BarChart(values, labels)
+    domainChart.saveAsPNG("chart.png")
 
 
 

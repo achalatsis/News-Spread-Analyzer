@@ -133,7 +133,8 @@ class Crawler:
             #it matches, so save it
             try: #parsing domain
                 parsedURI = urlparse(url)
-                domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
+                #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
+                domain = '{uri.netloc}'.format(uri=parsedURI)
                 self.domains.append(domain)
                 if applicationConfig.debugOutput is True:
                     print("Extracted url is:", domain)
