@@ -41,20 +41,20 @@ def ApplicationEntryPoint():
     applicationConfig.ybossURL = yahooBaseURL
     applicationConfig.ybossOAuthKey = yboss_oauth_key
     applicationConfig.ybossOAuthSecret = yboss_oauth_secret
-    applicationConfig.chartTitle = "News spread chart"
     applicationConfig.chartSubtitle = "News stories count"
 
     #settings for parsing article contents
-    punctuationMarksFilename = "case study/punctuationmarks"
-    ignoredWordsFilename = "case study/ignoredWords"
+    punctuationMarksFilename = "case study/punctuations_marks.txt"
+    ignoredWordsFilename = "case study/ignored_words.txt"
     parsingSettings = DocumentParsingSettings(punctuationMarksFilename, ignoredWordsFilename, 4)
 
     #load available articles
     articleLinks = []
-    articleLinksFilename = "case study/articleLinks"
+    articleLinksFilename = "case study/article_links.txt"
     try:
         file = open(articleLinksFilename, "rU")
-        for line in file:
+        chartTitle = file.readline() #we read the first line that contains the graph title
+        for line in file: #for the remainder lines that contain links
             articleLinks.append(line)
     except IOError as exc:
         print("Error reading from file: ", exc.strerror)
@@ -94,7 +94,7 @@ def ApplicationEntryPoint():
     values = [i[1] for i in topDomains]
     labels = [i[0] for i in topDomains]
 
-    domainChart = BarChart(values, labels)
+    domainChart = BarChart(chartTitle, values, labels)
     domainChart.saveAsPNG("output/chart.png")
     domainChart.saveAsSVG("output/chart.svg")
 

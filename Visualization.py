@@ -11,14 +11,14 @@ from ConfigBundle import *
 
 class BarChart():
 
-    def __init__(self, values, labels):
+    def __init__(self, chartTitle, values, labels):
 
         #initiate chart
         self.fig, self.ax1 = pyplot.subplots(figsize=(13, 8))
         pyplot.subplots_adjust(left=0.2, right=0.9)
 
         #set title, subtitle, and legend
-        self.ax1.set_title(applicationConfig.chartTitle)
+        self.ax1.set_title(chartTitle)
         pyplot.text(50, 0.1, applicationConfig.chartSubtitle, horizontalalignment='center', size='medium')
 
         #label position: place them at the center of each bar

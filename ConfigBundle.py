@@ -21,7 +21,6 @@ class ConfigBundle:
         self.ybossOAuthKey = ""
         self.ybossOAuthSecret = ""
 
-        self.chartTitle = ""
         self.chartSubtitle = ""
 
 
