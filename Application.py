@@ -93,8 +93,10 @@ def ApplicationEntryPoint(argv):
         for line in file: #for the remainder lines that contain links
             articleLinks.append(line)
     except IOError as exc:
-        print("Error reading from file: ", exc.strerror)
+        print("Error reading from file:", articeLinksFilename, exc.strerror)
         sys.exit()
+    finally:
+        file.close()
 
     #for each link start a new crawl
     domains = {}
@@ -123,6 +125,19 @@ def ApplicationEntryPoint(argv):
 
     #sort domains in reverse (most occurences) order
     domainsSortedByOccurences = sorted(domains, key=lambda tup: tup[1], reverse=True) #output is a list
+
+    #we will save all these data ([domains, occurences]) in a file for future use
+    domainsFilename = outputDirectory + '/domains.txt'
+    try:
+        file = open(domainsFilename, "w")
+        for domain in domainsSortedByOccurences:
+            file.write(domain + '\n')
+    except IOError as exc:
+        print("Error saving list of domains to file:", domainsFilename, exc.strerror)
+    finally:
+        file.close()
+
+
     topDomainsSortedByOccurences = domainsSortedByOccurences[:10] #now we have top 10 domains based on occurences
 
     #now we have to sort that alphabetically for the chart
