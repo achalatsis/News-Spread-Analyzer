@@ -14,5 +14,4 @@ You need 3 files to run the application:
 * a file with common words to ignore
 * a file with a list of article links to start crawling from, and a title for the output chart.
 
-You run the application with
-python Application.py punctuation_marks.txt ignored_words.txt article_links.txt
+You run the application with switch -h for running options.
