@@ -85,7 +85,6 @@ def ApplicationEntryPoint(argv):
     #settings for parsing article contents
     parsingSettings = DocumentParsingSettings(punctuationMarksFilename, ignoredWordsFilename, 4)
 
-    sys.exit()
     #load available articles
     articleLinks = []
     try:
@@ -118,18 +117,25 @@ def ApplicationEntryPoint(argv):
             else:
                 domains[domain] = 1
 
+    if len(domains) == 0:
+        print("A serious error occured and there are no results")
+        sys.exit(0)
+
     #sort domains in reverse (most occurences) order
-    sortedDomains = sorted(domains, key=lambda tup: tup[1], reverse=True)
-    topDomains = sortedDomains[:10]
+    domainsSortedByOccurences = sorted(domains, key=lambda tup: tup[1], reverse=True) #output is a list
+    topDomainsSortedByOccurences = domainsSortedByOccurences[:10] #now we have top 10 domains based on occurences
+
+    #now we have to sort that alphabetically for the chart
+    topDomainsSortedAlphabetically = sorted(topDomainsSortedByOccurences, key=lambda tup: tup[0])
 
     #print collected data
     if applicationConfig.debugOutput is True:
-        for domain in topDomains:
+        for domain in topDomainsSortedAlphabetically:
             print (domain[0], domain[1])
 
     #create a bar chart to display the domains
-    values = [i[1] for i in topDomains]
-    labels = [i[0] for i in topDomains]
+    values = [i[1] for i in topDomainsSortedAlphabetically]
+    labels = [i[0] for i in topDomainsSortedAlphabetically]
 
     domainChart = BarChart(chartTitle, values, labels)
     domainChart.saveAsPNG(outputDirectory + "/chart.png")
