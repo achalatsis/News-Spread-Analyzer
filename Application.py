@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import os, sys
+import os, sys, getopt
 import urllib2
 import simplejson
 import time
@@ -23,9 +23,11 @@ GoogleBaseSearchURLfromGreeceInGreek = "https://ajax.googleapis.com/ajax/service
 readabilityBaseURL = "https://www.readability.com/api/content/v1/parser?url={0}&token={1}"
 yahooBaseURL = "http://yboss.yahooapis.com/ysearch/web"
 
+usage = 'Usage: Application.py -m <punctuation marks file> -w <words to ignore file> -l <article links file> [-o <output directory>]'
+
 
 #main application code
-def ApplicationEntryPoint():
+def ApplicationEntryPoint(argv):
 
     #configuration
     applicationConfig.debugOutput = False
@@ -43,14 +45,49 @@ def ApplicationEntryPoint():
     applicationConfig.ybossOAuthSecret = yboss_oauth_secret
     applicationConfig.chartSubtitle = "News stories count"
 
+    #load command line arguments
+    articleLinksFilename = ''
+    punctuationMarksFilename = ''
+    ignoredWordsFilename = ''
+    outputDirectory = 'output' #default
+
+    try:
+        opts, args = getopt.getopt(argv[1:], "hm:w:l:o:", [])
+    except getopt.GetoptError:
+        print(usage)
+        sys.exit(-1)
+
+    for opt, arg in opts:
+        if opt == '-h':
+            print(usage)
+            sys.exit(0)
+        elif opt == '-m':
+            punctuationMarksFilename = arg
+        elif opt == '-w':
+            ignoredWordsFilename = arg
+        elif opt == '-l':
+            articleLinksFilename = arg
+        elif opt == '-o':
+            outputDirectory = arg
+
+    if applicationConfig.debugOutput is True:
+        print("Start options are:")
+        print("\tpunctuation marks file:", punctuationMarksFilename)
+        print("\tignored words file:", ignoredWordsFilename)
+        print("\tarticle links file:", articleLinksFilename)
+        print("\toutput directory:", outputDirectory)
+
+    #if one of the required options is missing
+    if len(articleLinksFilename) == 0 or len(punctuationMarksFilename) == 0 or len(ignoredWordsFilename) == 0:
+        print(usage)
+        sys.exit(-1)
+
     #settings for parsing article contents
-    punctuationMarksFilename = "case study/punctuations_marks.txt"
-    ignoredWordsFilename = "case study/ignored_words.txt"
     parsingSettings = DocumentParsingSettings(punctuationMarksFilename, ignoredWordsFilename, 4)
 
+    sys.exit()
     #load available articles
     articleLinks = []
-    articleLinksFilename = "case study/article_links.txt"
     try:
         file = open(articleLinksFilename, "rU")
         chartTitle = file.readline() #we read the first line that contains the graph title
@@ -95,8 +132,8 @@ def ApplicationEntryPoint():
     labels = [i[0] for i in topDomains]
 
     domainChart = BarChart(chartTitle, values, labels)
-    domainChart.saveAsPNG("output/chart.png")
-    domainChart.saveAsSVG("output/chart.svg")
+    domainChart.saveAsPNG(outputDirectory + "/chart.png")
+    domainChart.saveAsSVG(outputDirectory + "/chart.svg")
 
 
 
@@ -114,4 +151,4 @@ def PublicIPv4Address():
 
 
 if __name__ == "__main__":
-    ApplicationEntryPoint()
+    ApplicationEntryPoint(sys.argv)
