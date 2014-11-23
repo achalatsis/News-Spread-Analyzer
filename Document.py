@@ -66,6 +66,8 @@ class Document:
         except IOError as exc:
             print("Error reading from file: ", exc.strerror)
             raise
+        finally:
+            file.close()
 
         newDoc = Document(text)
         return newDoc
