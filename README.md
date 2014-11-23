@@ -8,3 +8,11 @@ Prerequisites:
 In a file named serviceTokens.py you should declare a variable:
 * readabilityToken, containing your Readability token
 * yboss_oauth_key and yboss_oauth_secret, containing your yahoo boss credentials
+
+You need 3 files to run the application:
+* a file with punctuation marks to strip
+* a file with common words to ignore
+* a file with a list of article links to start crawling from, and a title for the output chart.
+
+You run the application with
+python Application.py punctuation_marks.txt ignored_words.txt article_links.txt
