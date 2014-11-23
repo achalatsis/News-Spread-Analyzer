@@ -39,13 +39,13 @@ def ApplicationEntryPoint():
     applicationConfig.chartSubtitle = "News stories count"
 
     #settings for parsing article contents
-    punctuationMarksFilename = "sample data/punctuationmarks"
-    ignoredWordsFilename = "sample data/ignoredWords"
+    punctuationMarksFilename = "case study/punctuationmarks"
+    ignoredWordsFilename = "case study/ignoredWords"
     parsingSettings = DocumentParsingSettings(punctuationMarksFilename, ignoredWordsFilename, 4)
 
     #load available articles
     articleLinks = []
-    articleLinksFilename = "sample data/articleLinks"
+    articleLinksFilename = "case study/articleLinks"
     try:
         file = open(articleLinksFilename, "rU")
         for line in file:
@@ -88,7 +88,8 @@ def ApplicationEntryPoint():
     labels = [i[0] for i in topDomains]
 
     domainChart = BarChart(values, labels)
-    domainChart.saveAsPNG("chart.png")
+    domainChart.saveAsPNG("output/chart.png")
+    domainChart.saveAsSVG("output/chart.svg")
 
 
 
