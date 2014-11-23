@@ -28,6 +28,7 @@ class Crawler:
         self.domains = []
         self.urls = []
         self.parsingSettings = parsingSettings
+        self.outputFile = ''
 
 
     @staticmethod
@@ -134,6 +135,7 @@ class Crawler:
 
     def ValidateResults(self):
 
+        verifiedURLS = []
         for url in self.urls:
             #before saving the result, we have to open the page to verify it's subject
             #verification is done by comparing the first N (as configured) terms.
@@ -167,6 +169,10 @@ class Crawler:
                 continue
 
             #it matches, so save it
+
+            #first, add it to the verified list
+            verifiedURLS.append(url)
+
             try: #parsing domain
                 parsedURI = urlparse(url)
                 #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI)
@@ -177,7 +183,24 @@ class Crawler:
             except:
                 print("Error parsing URL")
 
+        #and now we will replace the list of all urls with the ones
+        #that were successfully verified
+        self.urls = verifiedURLS
+
         return self.domains
+
+
+    def SaveFoundPosts(self):
+        #we will save all found related posts
+        try:
+            file = open(self.outputFile, "a")
+            for url in self.urls:
+                file.write(url + '\n')
+            file.write('\n') #acts as a separator between related posts
+        except IOError as exc:
+            print("Error saving list of posts to file:", self.outputFile, exc.strerror)
+        finally:
+            file.close()
 
 
 

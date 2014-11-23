@@ -85,6 +85,10 @@ def ApplicationEntryPoint(argv):
     #settings for parsing article contents
     parsingSettings = DocumentParsingSettings(punctuationMarksFilename, ignoredWordsFilename, 4)
 
+    #output files
+    domainsFilename = outputDirectory + '/domains.txt'
+    postsFilename = outputDirectory + '/posts.txt'
+
     #load available articles
     articleLinks = []
     try:
@@ -107,8 +111,10 @@ def ApplicationEntryPoint(argv):
                 print("Error getting initial content from article:", link)
 
         if crawler is not None:
+            crawler.outputFile = postsFilename
             crawler.SearchYahoo()
             #crawler.SearchGoogle()
+            crawler.SaveFoundPosts()
         else:
             print("Error building crawler for article:", link)
             continue
@@ -127,7 +133,6 @@ def ApplicationEntryPoint(argv):
     domainsSortedByOccurences = sorted(domains, key=lambda tup: tup[1], reverse=True) #output is a list
 
     #we will save all these data ([domains, occurences]) in a file for future use
-    domainsFilename = outputDirectory + '/domains.txt'
     try:
         file = open(domainsFilename, "w")
         for domain in domainsSortedByOccurences:
