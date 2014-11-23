@@ -16,6 +16,10 @@ from Visualization import *
 global applicationConfig
 
 #search URLs
+GoogleBaseSearchURLfromGreece = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&tbs=ctr:countryGR&cr=countryGR&userip={0}&q={1}"
+GoogleBaseSearchURLSimple = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&userip={0}&q={1}"
+GoogleBaseSearchURLinGreek = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&tbs=lr:lang_1el&lr=lang_el&userip={0}&q={1}"
+GoogleBaseSearchURLfromGreeceInGreek = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&cr=countryGR&tbas=0&tbs=ctr:countryGR,lr:lang_1el&lr=lang_el&userip={0}&q={1}"
 readabilityBaseURL = "https://www.readability.com/api/content/v1/parser?url={0}&token={1}"
 yahooBaseURL = "http://yboss.yahooapis.com/ysearch/web"
 
@@ -26,6 +30,8 @@ def ApplicationEntryPoint():
     #configuration
     applicationConfig.debugOutput = False
     applicationConfig.termsToSearch = 10
+    applicationConfig.resultsToExamine = 50 #must be a multiple of 10. 50 match yahoo's result count
+    applicationConfig.GoogleURL = GoogleBaseSearchURLfromGreeceInGreek
     applicationConfig.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.104 Safari/537.36"
     applicationConfig.crawlerFetchTimeout = 2 #seconds
     applicationConfig.publicAddress = PublicIPv4Address();
@@ -64,6 +70,7 @@ def ApplicationEntryPoint():
 
         if crawler is not None:
             crawler.SearchYahoo()
+            #crawler.SearchGoogle()
         else:
             print("Error building crawler for article:", link)
             continue

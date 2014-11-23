@@ -96,6 +96,42 @@ class Crawler:
         self.ValidateResults()
 
 
+    def SearchGoogle(self):
+        #now we have to construct a search query from the return terms
+        searchTerms = ""
+        for word in self.keywords:
+            searchTerms += wrd[0] + "+"
+        searchTerms = searchTerms[:-1] #strip last +
+        searchURL = applicationConfig.GoogleURL.format(applicationConfig.publicAddress, urllib2.quote(searchTerms), '/')
+        print("Escaped search URL is: ", searchURL)
+
+        #startch fetching
+        for start in range(0, applicationConfig.resultsToExamine):
+            currentURL = searchURL + "&start=" + str(start*10)
+            try: #fetching
+                page = urllib2.urlopen(currentURL)
+                json = simplejson.load(page)
+            except:
+                print("There was an error fetching Google results:")
+                continue
+
+            responseStatus = json["responseStatus"]
+            if responseStatus is not 200:
+                raise CrawlerError("Error fetching results from Google: {0}".format(responseStatus))
+            if applicationConfig.debugOutput is true:
+                print(page)
+
+            results = json["responseData"]["results"]
+            for result in results:
+                unescapedURL = result["unescapedUrl"]
+                self.urls.append(unescapedURL)
+
+            time.sleep(applicationConfig.queryDelay) #try to make Google bot detection happy
+            print("Fetching more results")
+
+        self.ValidateResults()
+
+
     def ValidateResults(self):
 
         for url in self.urls:

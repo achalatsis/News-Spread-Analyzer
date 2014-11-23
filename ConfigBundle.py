@@ -7,6 +7,8 @@ class ConfigBundle:
         self.debugOutput = False
 
         self.termsToSearch = 0
+        self.resultsToExamine = 0
+        self.GoogleURL = ""
         self.userAgent = ""
 
         self.publicAddress = ""
