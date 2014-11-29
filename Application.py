@@ -45,7 +45,6 @@ def ApplicationEntryPoint(argv):
 
     #first we will load some default values for our configuration
     #various configuration options
-    applicationConfig.debugOutput = False
     applicationConfig.termsToSearch = 10
     applicationConfig.publicAddress = PublicIPAddress();
 
