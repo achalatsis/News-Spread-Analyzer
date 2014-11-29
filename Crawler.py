@@ -95,10 +95,11 @@ class Crawler:
         #and then apply tf metrics on it to extract top keywords
         doc = Document(pureArticle)
         topKeywords = doc.CalculateTF(parsingSettings, True, applicationConfig.termsToSearch)
-        print("Most common terms in are:")
-        for keyword in topKeywords:
-            print(keyword[0], ":", keyword[1], end=", ")
-        print("")
+        if applicationConfig.debugOutput is True:
+            print("Most common terms in are:")
+            for keyword in topKeywords:
+                print(keyword[0], ":", keyword[1], end=", ")
+            print("")
 
         #finally we create the Crawler instance
         spider = Crawler(topKeywords, parsingSettings)
@@ -121,7 +122,8 @@ class Crawler:
         searchURL = req.to_url().replace('+', '%20')
 
         #try fetching results & parsing json
-        print("Escaped search URL is: ", searchURL)
+        if applicationConfig.debugOutput is True:
+            print("Escaped search URL is: ", searchURL)
         try:
             page = urllib2.urlopen(searchURL)
             json = simplejson.load(page)
@@ -149,7 +151,8 @@ class Crawler:
             searchTerms += wrd[0] + "+"
         searchTerms = searchTerms[:-1] #strip last +
         searchURL = applicationConfig.GoogleURL.format(applicationConfig.publicAddress, urllib2.quote(searchTerms), '/')
-        print("Escaped search URL is: ", searchURL)
+        if applicationconfig.debugOutput is True:
+            print("Escaped search URL is: ", searchURL)
 
         #startch fetching
         for start in range(0, applicationConfig.GoogleResultsToExamine):
@@ -231,6 +234,10 @@ class Crawler:
                 parsedURI = urlparse(url)
                 #domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsedURI) #for saving a usable link with protocol
                 domain = '{uri.netloc}'.format(uri=parsedURI)
+
+                #check if the domain contains a www. prefix and strip it
+
+
                 self.domains.append(domain)
 
                 if applicationConfig.debugOutput is True:
