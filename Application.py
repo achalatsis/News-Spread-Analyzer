@@ -134,7 +134,7 @@ def ApplicationEntryPoint(argv):
     domains = {}
     for link in articleLinks:
         try:
-            crawler = Crawler.FromLink(link, parsingSettings) #create crawler
+            crawler = Crawler.FromLink(link[:-1], parsingSettings) #create crawler
         except CrawlerError as exc:
                 print("Error getting initial content from article:", link)
 
@@ -158,14 +158,21 @@ def ApplicationEntryPoint(argv):
         print("A serious error occured and there are no results")
         sys.exit(0)
 
+    #domains is a dictionary. first we have to convert it to a tupple list
+    domainsList = []
+    for key, value in domains.iteritems():
+        tmp = [key, value]
+        domainsList.append(tmp)
+
     #sort domains in reverse (most occurences) order
-    domainsSortedByOccurences = sorted(domains, key=lambda tup: tup[1], reverse=True) #output is a list
+    domainsSortedByOccurences = sorted(domainsList, key=lambda tup: tup[1], reverse=True) #output is a list
 
     #we will save all these data ([domains, occurences]) in a file for future use
     try:
         file = open(domainsFilename, "w")
         for domain in domainsSortedByOccurences:
-            file.write(domain + '\n')
+            file.write(domain[0] + ' ' + str(domain[1]) + '\n')
+            print(domain[0], str(domain[1]))
     except IOError as exc:
         print("Error saving list of domains to file:", domainsFilename, exc.strerror)
     finally:
@@ -185,6 +192,8 @@ def ApplicationEntryPoint(argv):
     #create a bar chart to display the domains
     values = [i[1] for i in topDomainsSortedAlphabetically]
     labels = [i[0] for i in topDomainsSortedAlphabetically]
+    for i in range(0, len(labels)):
+        print(labels[i], values[i])
     domainChart = BarChart(chartTitle, values, labels)
 
     #and finally save the chart
