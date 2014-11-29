@@ -110,6 +110,10 @@ def ApplicationEntryPoint(argv):
     #settings for parsing article contents
     parsingSettings = DocumentParsingSettings(punctuationMarksFilename, ignoredWordsFilename, 4)
 
+    #check if output directory exists, if not create it
+    if not os.path.exists(outputDirectory):
+        os.makedirs(outputDirectory)
+
     #output files
     domainsFilename = outputDirectory + '/domains.txt'
     postsFilename = outputDirectory + '/posts.txt'
