@@ -236,7 +236,8 @@ class Crawler:
                 domain = '{uri.netloc}'.format(uri=parsedURI)
 
                 #check if the domain contains a www. prefix and strip it
-
+                if domain.startswith('www.'):
+                    domain = domain[4:]
 
                 self.domains.append(domain)
 
