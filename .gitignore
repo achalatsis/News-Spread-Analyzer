@@ -4,3 +4,4 @@ testing.py
 serviceTokens.py
 *.pyc
 chart*
+output/*
