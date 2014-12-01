@@ -175,7 +175,6 @@ def ApplicationEntryPoint(argv):
         file = open(domainsFilename, "w")
         for domain in domainsSortedByOccurences:
             file.write(domain[0] + ' ' + str(domain[1]) + '\n')
-            print(domain[0], str(domain[1]))
     except IOError as exc:
         print("Error saving list of domains to file:", domainsFilename, exc.strerror)
     finally:
