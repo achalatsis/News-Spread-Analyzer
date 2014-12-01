@@ -23,7 +23,7 @@ class BarChart():
     def __init__(self, chartTitle, values, labels):
 
         #create a new chart plot, and size the canvas appropriately
-        self.fig, self.ax1 = pyplot.subplots(figsize=(13, 8))
+        self.fig, self.ax1 = pyplot.subplots(figsize=(15, 8))
         pyplot.subplots_adjust(left=0.2, right=0.9)
 
         #set title, subtitle, and legend
