@@ -194,8 +194,6 @@ def ApplicationEntryPoint(argv):
     #create a bar chart to display the domains
     values = [i[1] for i in topDomainsSortedAlphabetically]
     labels = [i[0] for i in topDomainsSortedAlphabetically]
-    for i in range(0, len(labels)):
-        print(labels[i], values[i])
     domainChart = BarChart(chartTitle, values, labels)
 
     #and finally save the chart
